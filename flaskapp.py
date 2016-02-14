@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 from requests import get
 from flask import Flask, request, flash, url_for, redirect, \
      render_template, abort, send_from_directory
@@ -26,9 +26,14 @@ def index():
         for metro in svedm[u'ResponseData'][u'Metros']:
             if metro[u'JourneyDirection']==1:
                 svedm_next.append(metro[u'DisplayTime'])
-        print svedm_next
-
-        return render_template('index.html', bandhv_next=bandhv_next, svedm_next=svedm_next)
+        is_household_garbage_collection_day = True if datetime.today().weekday() == 0 else False
+        is_foodwaste_collection_day = True if (date.today() - date(2015, 12, 30)).days%14 == 0 else False
+        return render_template('index.html',
+                                bandhv_next=bandhv_next,
+                                svedm_next=svedm_next,
+                                is_household_garbage_collection_day = is_household_garbage_collection_day,
+                                is_foodwaste_collection_day = is_foodwaste_collection_day,
+                                )
     else:
         return render_template('index.html', error="Trafiklab API Key not defined. Please add it as an env variable.")
 
