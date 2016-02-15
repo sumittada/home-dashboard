@@ -8,7 +8,9 @@ to be saved as an environment variable: SL_API_KEY_REALTIMEDEP
 
 ## Garbage collection
 Household waste: every Monday
+
 Food waste: every second Thursday, starting at 31th Dec 2015
+
 So the indicator should show corresponding message one day before those days
 
 ## Local server
