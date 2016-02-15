@@ -21,7 +21,7 @@ def index():
         bandhv_next = []
         svedm_next = []
         for bus in bandhv[u'ResponseData'][u'Buses']:
-            if bus[u'JourneyDirection']==1:
+            if bus[u'JourneyDirection']==2:
                 bandhv_next.append(bus[u'DisplayTime'])
         for metro in svedm[u'ResponseData'][u'Metros']:
             if metro[u'JourneyDirection']==1:
