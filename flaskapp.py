@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
 from datetime import datetime, date
 from requests import get
-from flask import Flask, request, flash, url_for, redirect, \
-     render_template, abort, send_from_directory
+from flask import Flask, render_template, send_from_directory
+from simplejson.decoder import JSONDecodeError
 
 app = Flask(__name__)
 app.config.from_pyfile('flaskapp.cfg')
@@ -15,25 +16,42 @@ except KeyError:
 @app.route('/')
 def index():
     if sl_api_key_realtime_dep:
-        bandhv = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep + "&siteid=1867&timewindow=60").json()
-        svedm = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
-         "&siteid=9165&timewindow=60").json()
         bandhv_next = []
         svedm_next = []
-        for bus in bandhv[u'ResponseData'][u'Buses']:
-            if bus[u'JourneyDirection']==2:
-                bandhv_next.append(bus[u'DisplayTime'])
-        for metro in svedm[u'ResponseData'][u'Metros']:
-            if metro[u'JourneyDirection']==1:
-                svedm_next.append(metro[u'DisplayTime'])
+        try:
+            bandhv = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
+                         "&siteid=1867&timewindow=60").json()
+        except JSONDecodeError:
+            print("No data fetched for Bandhagsvägen")
+            bandhv = None
+        else:
+            print bandhv
+            if bandhv and bandhv.get(u'ResponseData', None):
+                for bus in bandhv.get(u'ResponseData', None).get(u'Buses', None):
+                    if bus.get(u'JourneyDirection', 0) == 2:
+                        print(bus)
+                        bandhv_next.append(bus.get(u'DisplayTime', None))
+        try:
+            svedm = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
+                        "&siteid=9165&timewindow=60").json()
+        except JSONDecodeError:
+            print("No data fetched for Svedmyra")
+            svedm = None
+        else:
+            print svedm
+            if svedm and svedm.get(u'ResponseData', None):
+                for metro in svedm.get(u'ResponseData', None).get(u'Metros', None):
+                    if metro.get(u'JourneyDirection', None) == 1:
+                        print(metro)
+                        svedm_next.append(metro.get(u'DisplayTime', None))
         is_household_garbage_collection_day = True if datetime.today().weekday() == 0 else False
         is_foodwaste_collection_day = True if (date.today() - date(2015, 12, 30)).days%14 == 0 else False
         return render_template('index.html',
-                                bandhv_next=bandhv_next,
-                                svedm_next=svedm_next,
-                                is_household_garbage_collection_day = is_household_garbage_collection_day,
-                                is_foodwaste_collection_day = is_foodwaste_collection_day,
-                                )
+                               bandhv_next=bandhv_next,
+                               svedm_next=svedm_next,
+                               is_household_garbage_collection_day=is_household_garbage_collection_day,
+                               is_foodwaste_collection_day=is_foodwaste_collection_day,
+                              )
     else:
         return render_template('index.html', error="Trafiklab API Key not defined. Please add it as an env variable.")
 
