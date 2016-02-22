@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from datetime import datetime, date
-from requests import get
+from requests import get, ConnectionError
 from flask import Flask, render_template, send_from_directory
 from simplejson.decoder import JSONDecodeError
 
@@ -16,14 +16,19 @@ except KeyError:
 @app.route('/')
 def index():
     if sl_api_key_realtime_dep:
+        error = None
         bandhv_next = []
         svedm_next = []
+        grondal_next = []
         try:
             bandhv = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
                          "&siteid=1867&timewindow=60").json()
         except JSONDecodeError:
             print("No data fetched for Bandhagsvägen")
             bandhv = None
+        except ConnectionError:
+            error = "Can't connect to SL server for fetching latest data"
+            print(error)
         else:
             print bandhv
             if bandhv and bandhv.get(u'ResponseData', None):
@@ -37,6 +42,9 @@ def index():
         except JSONDecodeError:
             print("No data fetched for Svedmyra")
             svedm = None
+        except ConnectionError:
+            error = "Can't connect to SL server for fetching latest data"
+            print(error)
         else:
             print svedm
             if svedm and svedm.get(u'ResponseData', None):
@@ -44,16 +52,23 @@ def index():
                     if metro.get(u'JourneyDirection', None) == 1:
                         print(metro)
                         svedm_next.append(metro.get(u'DisplayTime', None))
+
+            if svedm and svedm.get(u'ResponseData', None):
+                for bus in svedm.get(u'ResponseData', None).get(u'Buses', None):
+                    if bus.get(u'JourneyDirection', None) == 1 and bus.get(u'LineNumber', None) == u'161':
+                        print(bus)
+                        grondal_next.append(bus.get(u'DisplayTime', None))
         is_household_garbage_collection_day = True if datetime.today().weekday() == 0 else False
         is_foodwaste_collection_day = True if (date.today() - date(2015, 12, 30)).days%14 == 0 else False
         return render_template('index.html',
+                               error=error,
                                bandhv_next=bandhv_next,
                                svedm_next=svedm_next,
+                               grondal_next=grondal_next,
                                is_household_garbage_collection_day=is_household_garbage_collection_day,
                                is_foodwaste_collection_day=is_foodwaste_collection_day,
                               )
-    else:
-        return render_template('index.html', error="Trafiklab API Key not defined. Please add it as an env variable.")
+    return render_template('index.html', error="Trafiklab API Key not defined. Please add it as an env variable.")
 
 @app.route('/<path:resource>')
 def serveStaticResource(resource):

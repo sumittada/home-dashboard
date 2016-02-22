@@ -145,7 +145,7 @@ h1 {
   font-size: 25px;
   font-weight: 300;
   border-bottom: 1px solid #fff;
-  margin-bottom: .5em;
+  margin-top: 0;
 }
 h1:after {
   content: "";
@@ -194,7 +194,26 @@ line-height: 1.4;
   font-family: Menlo,Monaco,"Liberation Mono",Consolas,monospace !important;
 }
 .next_departure{
-  font-size: 52px;
+  font-size: 96px;
   margin-top: 15px;
   border-bottom: 0;
+  margin-bottom: 0px;
+}
+
+.next_next_departure{
+  font-size: 28px;
+}
+
+.announcement{
+    background: green;
+    padding: 0 10px;
+}
+
+.brown{
+  background: #3a1313;
+}
+
+.secondary_next{
+  font-size: 18px;
+  margin-top: 50px;
 }
