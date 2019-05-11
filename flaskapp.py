@@ -21,8 +21,8 @@ def index():
         svedm_next = []
         grondal_next = []
         try:
-            bandhv = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
-                         "&siteid=1867&timewindow=60").json()
+            bandhv = get("https://api.sl.se/api2/realtimedeparturesV4.json?key=" + sl_api_key_realtime_dep +
+                         "&siteid=5326&timewindow=60").json()
         except JSONDecodeError:
             print("No data fetched for Bandhagsvägen")
             bandhv = None
@@ -36,8 +36,8 @@ def index():
                     if bus.get(u'JourneyDirection', 0) == 2:
                         print(bus)
                         bandhv_next.append(bus.get(u'DisplayTime', None))
-        try:
-            svedm = get("https://api.sl.se/api2/realtimedepartures.json?key=" + sl_api_key_realtime_dep +
+        '''try:
+            svedm = get("https://api.sl.se/api2/realtimedeparturesV4.json?key=" + sl_api_key_realtime_dep +
                         "&siteid=9165&timewindow=60").json()
         except JSONDecodeError:
             print("No data fetched for Svedmyra")
@@ -57,7 +57,7 @@ def index():
                 for bus in svedm.get(u'ResponseData', None).get(u'Buses', None):
                     if bus.get(u'JourneyDirection', None) == 1 and bus.get(u'LineNumber', None) == u'161':
                         print(bus)
-                        grondal_next.append(bus.get(u'DisplayTime', None))
+                        grondal_next.append(bus.get(u'DisplayTime', None))'''
         is_household_garbage_collection_day = True if datetime.today().weekday() == 0 else False
         is_foodwaste_collection_day = True if (date.today() - date(2015, 12, 30)).days%14 == 0 else False
         return render_template('index.html',
