@@ -30,7 +30,7 @@ def index():
             error = "Can't connect to SL server for fetching latest data"
             print(error)
         else:
-            print bandhv
+            print(bandhv)
             if bandhv and bandhv.get(u'ResponseData', None):
                 for bus in bandhv.get(u'ResponseData', None).get(u'Buses', None):
                     if bus.get(u'JourneyDirection', 0) == 2:
